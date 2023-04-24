@@ -30,7 +30,7 @@ class ParselGetSelectorInText:
                 text = remove_trailing_chars(text=text)
                 if text != "":
                     text = ftfy.fix_text(text=text)
-                    self.total_text += text
+                    self.total_text += text + "\n"
             else:
                 self.traverse_soup(root=child)
         return None
