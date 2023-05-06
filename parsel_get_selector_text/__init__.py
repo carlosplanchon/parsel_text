@@ -18,6 +18,9 @@ def remove_trailing_chars(text: str) -> str:
 
 
 class ParselGetSelectorInText:
+    def __init__(self, fix_mojibake: bool):
+        self.fix_mojibake = fix_mojibake
+
     def traverse_soup(self, root) -> None:
         """
         Traverses a BeautifulSoup object recursively, extracting all NavigableStrings,
@@ -29,7 +32,8 @@ class ParselGetSelectorInText:
                 text: str = child.get_text(separator=" ")
                 text = remove_trailing_chars(text=text)
                 if text != "":
-                    text = ftfy.fix_text(text=text)
+                    if self.fix_mojibake is True:
+                        text = ftfy.fix_text(text=text)
                     self.total_text += text + "\n"
             else:
                 self.traverse_soup(root=child)
@@ -62,12 +66,18 @@ class ParselGetSelectorInText:
         return self.total_text
 
 
-def parsel_sel_get_text(parsel_sel: parsel.Selector, xpath: str) -> str:
+def parsel_sel_get_text(
+    parsel_sel: parsel.Selector,
+    xpath: str,
+    fix_mojibake=True
+        ) -> str:
     """
     Extracts all text results from an XPath
     query on a parsel Selector object.
     """
-    sel_text_obj = ParselGetSelectorInText()
+    sel_text_obj = ParselGetSelectorInText(
+        fix_mojibake=fix_mojibake
+    )
 
     total_text: str = sel_text_obj.get_xpath_results(
         parsel_sel=parsel_sel,

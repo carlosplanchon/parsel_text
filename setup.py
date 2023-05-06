@@ -8,7 +8,7 @@ with open("README.md", "r") as f:
 setup(
     name="parsel_get_selector_text",
     packages=["parsel_get_selector_text"],
-    version="0.2",
+    version="0.3",
     license="MIT",
     description="Extracts all text results from an XPath "\
         "query on a parsel Selector object.",
@@ -17,9 +17,7 @@ setup(
     author="Carlos A. Planchón",
     author_email="carlosandresplanchonprestes@gmail.com",
     url="https://github.com/carlosplanchon/parsel_get_selector_text",
-    download_url="https://github.com/carlosplanchon/"
-        "parsel_get_selector_text/archive/v0.2.tar.gz",
-    keywords=["comment", "remover"],
+    keywords=["dom", "parsel", "scraping", "xpath"],
     classifiers=[
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Build Tools",
