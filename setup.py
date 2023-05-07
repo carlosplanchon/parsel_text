@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as f:
     readme = f.read()
 
 setup(
     name="parsel_get_selector_text",
-    packages=["parsel_get_selector_text"],
-    version="0.3",
+    packages=find_packages(),
+    version="0.5",
     license="MIT",
     description="Extracts all text results from an XPath "\
         "query on a parsel Selector object.",
@@ -24,4 +24,9 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.11",
     ],
+    install_requires=[
+        "ftfy",
+        "parsel",
+        "beautifulsoup4"
+    ]
 )
