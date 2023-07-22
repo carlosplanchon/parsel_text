@@ -84,3 +84,14 @@ def parsel_sel_get_text(
         xpath=xpath
     )
     return total_text
+
+
+def get_bs4_soup_text(bs4_soup: bs4.BeautifulSoup) -> str:
+    sel_text_obj = ParselGetSelectorInText(
+        fix_mojibake=True
+    )
+
+    sel_text_obj.total_text: str = ""
+    sel_text_obj.traverse_soup(root=bs4_soup)
+    total_text: str = sel_text_obj.total_text
+    return total_text
