@@ -8,7 +8,7 @@ packages = ["parsel_get_selector_text"]
 
 [project]
 name = "parsel_get_selector_text"
-version = "0.7"
+version = "0.8"
 authors = [
     {name = "Carlos A. Planchón", email = "carlosandresplanchonprestes@gmail.com"}
 ]
