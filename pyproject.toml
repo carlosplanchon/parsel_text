@@ -3,11 +3,11 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [options]
-package_dir = "parsel_get_selector_text"
-packages = ["parsel_get_selector_text"]
+package_dir = "parsel_text"
+packages = ["parsel_text"]
 
 [project]
-name = "parsel_get_selector_text"
+name = "parsel_text"
 version = "0.8"
 authors = [
     {name = "Carlos A. Planchón", email = "carlosandresplanchonprestes@gmail.com"}
@@ -29,4 +29,4 @@ dependencies=[
 ]
 
 [project.urls]
-repository = "https://github.com/carlosplanchon/parsel_get_selector_text.git"
+repository = "https://github.com/carlosplanchon/parsel_text.git"

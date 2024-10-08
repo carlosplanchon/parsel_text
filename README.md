@@ -1,13 +1,13 @@
-# parsel_get_selector_text
+# parsel_text
 
-`parsel_get_selector_text` is a Python library designed to simplify the extraction of text data from HTML or XML documents using XPath queries on `parsel` Selector objects. It provides a straightforward interface to obtain and optionally fix mojibake (garbled text due to encoding issues).
+`parsel_text` is a Python library designed to simplify the extraction of text data from HTML or XML documents using XPath queries on `parsel` Selector objects. It provides a straightforward interface to obtain and optionally fix mojibake (garbled text due to encoding issues).
 
 ## Installation
 
-To install `parsel_get_selector_text`, use pip:
+To install `parsel_text`, use pip:
 
 ```bash
-pip install parsel_get_selector_text
+pip install parsel_text
 ```
 
 ## Usage
@@ -32,14 +32,14 @@ Here's a simple example of how to use the `parsel_sel_get_text` function:
 
 ```python
 from parsel import Selector
-from parsel_get_selector_text import parsel_sel_get_text
+from parsel_text import parsel_sel_get_text
 
 html_content = """
 <html>
   <body>
     <div id="content">
       <p>Hello, world!</p>
-      <p>Welcome to the parsel_get_selector_text library.</p>
+      <p>Welcome to the parsel_text library.</p>
     </div>
   </body>
 </html>
@@ -61,7 +61,7 @@ print(extracted_text)
 
 ```
 Hello, world!
-Welcome to the parsel_get_selector_text library.
+Welcome to the parsel_text library.
 ```
 
 ## Contributing

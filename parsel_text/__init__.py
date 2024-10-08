@@ -66,7 +66,7 @@ class ParselGetSelectorInText:
         return self.total_text
 
 
-def parsel_sel_get_text(
+def get_xpath_text(
     parsel_sel: parsel.Selector,
     xpath: str,
     fix_mojibake=True
