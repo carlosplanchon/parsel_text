@@ -23,7 +23,8 @@ class ParselGetSelectorInText:
 
     def traverse_soup(self, root) -> None:
         """
-        Traverses a BeautifulSoup object recursively, extracting all NavigableStrings,
+        Traverses a BeautifulSoup object recursively,
+        extracting all NavigableStrings,
         removing mojibake and extracting their text.
         """
         children_list = list(root.children)
@@ -39,7 +40,10 @@ class ParselGetSelectorInText:
                 self.traverse_soup(root=child)
         return None
 
-    def get_sel_results(self, sel_results: parsel.SelectorList) -> None:
+    def get_sel_results(
+        self,
+        sel_results: parsel.SelectorList
+            ) -> None:
         """
         Takes a list of Selector objects and extracts
         all NavigableStrings from their HTML.
@@ -65,11 +69,37 @@ class ParselGetSelectorInText:
         self.total_text.rstrip("\n")
         return self.total_text
 
+    def get_xpath_row_results(
+        self,
+        parsel_sel: parsel.Selector,
+        xpath: str
+            ) -> list[str]:
+        """
+        Extracts all text results from an XPath
+        query on a parsel Selector object.
+        """
+        row_results: list[str] = []
+
+        sel_results = parsel_sel.xpath(xpath)
+
+        for row in sel_results:
+            self.total_text: str = ""
+
+            html: str = row.get()
+            soup = bs4.BeautifulSoup(html, features="lxml")
+            self.traverse_soup(root=soup)
+
+            self.total_text.rstrip("\n")
+
+            row_results.append(self.total_text)
+
+        return row_results
+
 
 def get_xpath_text(
     parsel_sel: parsel.Selector,
     xpath: str,
-    fix_mojibake=True
+    fix_mojibake: bool = True
         ) -> str:
     """
     Extracts all text results from an XPath
@@ -84,6 +114,28 @@ def get_xpath_text(
         xpath=xpath
     )
     return total_text
+
+
+def get_results_row_text(
+    parsel_sel: parsel.Selector,
+    xpath: str,
+    fix_mojibake: bool = True
+        ) -> list[str]:
+    """
+    Extracts all text results from an XPath
+    query on a parsel Selector object.
+    In this case if parsel selector has multiple rows
+    it will return a list of strings.
+    """
+    sel_text_obj = ParselGetSelectorInText(
+        fix_mojibake=fix_mojibake
+    )
+
+    total_rows_text: str = sel_text_obj.get_xpath_row_results(
+        parsel_sel=parsel_sel,
+        xpath=xpath
+    )
+    return total_rows_text
 
 
 def get_bs4_soup_text(bs4_soup: bs4.BeautifulSoup) -> str:
