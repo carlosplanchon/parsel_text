@@ -8,7 +8,7 @@ packages = ["parsel_text"]
 
 [project]
 name = "parsel_text"
-version = "1.0"
+version = "1.1"
 authors = [
     {name = "Carlos A. Planchón", email = "carlosandresplanchonprestes@gmail.com"}
 ]

@@ -6,6 +6,13 @@ import ftfy
 
 import parsel
 
+import warnings
+
+from bs4 import MarkupResemblesLocatorWarning
+
+# Suppress the specific warning
+warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
+
 
 def remove_trailing_chars(text: str) -> str:
     """
