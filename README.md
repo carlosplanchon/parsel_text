@@ -52,7 +52,7 @@ selector = Selector(text=html_content)
 xpath_query = "//div[@id='content']/p//text()"
 
 # Extract text using the parsel_sel_get_text function
-extracted_text = parsel_sel_get_text(parsel_sel=selector, xpath=xpath_query)
+extracted_text = get_xpath_text(parsel_sel=selector, xpath=xpath_query)
 
 print(extracted_text)
 ```
