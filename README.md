@@ -12,7 +12,7 @@ pip install parsel_text
 
 ## Usage
 
-### Function: `parsel_sel_get_text`
+### Function: `get_xpath_text`
 
 This is the main function of the library, designed to extract all text results from an XPath query on a `parsel` Selector object.
 
@@ -32,7 +32,7 @@ Here's a simple example of how to use the `parsel_sel_get_text` function:
 
 ```python
 from parsel import Selector
-from parsel_text import parsel_sel_get_text
+from parsel_text import get_xpath_text
 
 html_content = """
 <html>
