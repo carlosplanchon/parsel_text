@@ -1,14 +1,10 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[options]
-package_dir = "parsel_text"
-packages = ["parsel_text"]
 
 [project]
 name = "parsel_text"
-version = "1.1"
+version = "1.2"
 authors = [
     {name = "Carlos A. Planchón", email = "carlosandresplanchonprestes@gmail.com"}
 ]
@@ -16,10 +12,18 @@ description = "Extracts all text results from an XPath query on a parsel Selecto
 classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
-    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14"
 ]
-license = {text = "MIT License"}
+
+license = "MIT"
+license-files = ["LICENSE"]
+
+requires-python = ">=3.10"
+
 keywords = ["dom", "parsel", "scraping", "xpath"]
 readme = "README.md"
 dependencies=[
@@ -29,4 +33,7 @@ dependencies=[
 ]
 
 [project.urls]
-repository = "https://github.com/carlosplanchon/parsel_text.git"
+Repository = "https://github.com/carlosplanchon/parsel_text.git"
+
+[tool.setuptools]
+packages = ["parsel_text"]
