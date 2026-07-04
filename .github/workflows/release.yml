@@ -35,7 +35,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - name: Check tag matches pyproject version
         run: |
@@ -60,7 +60,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - name: Build sdist and wheel
         run: uv build
