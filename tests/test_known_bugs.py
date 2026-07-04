@@ -8,7 +8,14 @@ promote it to a normal passing test.
 
 import pytest
 
-from conftest import README_HTML, mojibake, sel, soup
+from conftest import (
+    README_HTML,
+    deep_nested_html,
+    load_fixture,
+    mojibake,
+    sel,
+    soup,
+)
 
 from parsel_text import get_bs4_soup_text, get_results_row_text, get_xpath_text
 
@@ -40,3 +47,43 @@ def test_get_bs4_soup_text_honours_fix_mojibake_false():
     raw = mojibake("café")
     result = get_bs4_soup_text(bs4_soup=soup("<div>" + raw + "</div>"), fix_mojibake=False)
     assert raw in result
+
+
+# --------------------------------------------------------------------------- #
+# Findings from the production-HTML exploration (2026-07-04). The user asked to
+# treat these as bugs to fix in the refactor.
+# --------------------------------------------------------------------------- #
+@pytest.mark.xfail(
+    reason="An xpath matching nested same-type elements (e.g. //div) re-extracts "
+    "each matched subtree, so descendant text is duplicated once per nesting level.",
+)
+def test_nested_selector_does_not_duplicate():
+    out = get_xpath_text(parsel_sel=sel("<div><div>DUP</div></div>"), xpath="//div")
+    assert out.count("DUP") == 1
+
+
+@pytest.mark.xfail(
+    reason="traverse_soup is recursive; a DOM nested >= ~1000 levels overflows the "
+    "Python stack (RecursionError). A parsel .//text() rewrite (C-level) fixes it.",
+)
+def test_deep_dom_does_not_crash():
+    out = get_xpath_text(parsel_sel=sel(deep_nested_html(1500)), xpath="//body")
+    assert "DEEP_LEAF" in out
+
+
+@pytest.mark.xfail(
+    reason="remove_trailing_chars collapses all whitespace, destroying significant "
+    "indentation/newlines inside <pre>/<code> (code/poetry data loss).",
+)
+def test_pre_code_preserves_indentation():
+    out = get_xpath_text(parsel_sel=sel(load_fixture("whitespace.html")), xpath="//code")
+    assert "\n    if n < 2" in out
+
+
+@pytest.mark.xfail(
+    reason="<noscript> fallback text (usually non-content) is included; it should be "
+    "excluded like <script>/<style>.",
+)
+def test_noscript_excluded():
+    out = get_xpath_text(parsel_sel=sel(load_fixture("news.html")), xpath="//article")
+    assert "NOSCRIPT_MARKER" not in out

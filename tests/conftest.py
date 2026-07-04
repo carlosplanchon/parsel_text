@@ -2,7 +2,12 @@
 
 import bs4
 
+from pathlib import Path
+
 from parsel import Selector
+
+
+FIXTURES = Path(__file__).parent / "fixtures"
 
 
 # Non-breaking space (U+00A0). Python's str.split() treats it as whitespace, so
@@ -35,3 +40,41 @@ def mojibake(text: str) -> str:
     ``"café" -> "cafÃ©"`` -- exactly what ftfy.fix_text is meant to undo.
     """
     return text.encode("utf-8").decode("latin-1")
+
+
+def load_fixture(name: str) -> str:
+    """Read a production-like HTML fixture from tests/fixtures/."""
+    return (FIXTURES / name).read_text(encoding="utf-8")
+
+
+def search_results_html(n: int = 1000) -> str:
+    """Build a search-results page with *n* repeated result cards.
+
+    Kept as a generator (not a committed file) because the interesting variable
+    is scale -- a 1000-card page is ~270 KB.
+    """
+    cards = [
+        f'<div class="result-card">'
+        f'<h3><a href="/item/{i}">Resultado número {i}</a></h3>'
+        f'<p class="snippet">Este es el <em>fragmento</em> del resultado {i}, '
+        f"con texto de relleno para simular un extracto real.</p>"
+        f'<span class="meta">Precio: {i},99 · rating {i % 5 + 1}/5</span>'
+        f"</div>"
+        for i in range(n)
+    ]
+    return (
+        "<!DOCTYPE html><html><body><main id='results'>"
+        + "".join(cards)
+        + "</main></body></html>"
+    )
+
+
+def deep_nested_html(depth: int, leaf: str = "DEEP_LEAF") -> str:
+    """Build a pathologically deep DOM to probe traverse_soup's recursion."""
+    return (
+        "<html><body>"
+        + "<div>" * depth
+        + leaf
+        + "</div>" * depth
+        + "</body></html>"
+    )
