@@ -2,7 +2,7 @@
 
 ![parsel_text](https://raw.githubusercontent.com/carlosplanchon/parsel_text/main/assets/banner.jpg)
 
-[![Tests](https://github.com/carlosplanchon/parsel_text/actions/workflows/tests.yml/badge.svg)](https://github.com/carlosplanchon/parsel_text/actions/workflows/tests.yml)
+[![CI](https://github.com/carlosplanchon/parsel_text/actions/workflows/tests.yml/badge.svg)](https://github.com/carlosplanchon/parsel_text/actions/workflows/tests.yml)
 [![PyPI version](https://img.shields.io/pypi/v/parsel_text.svg)](https://pypi.org/project/parsel_text/)
 [![Python versions](https://img.shields.io/pypi/pyversions/parsel_text.svg)](https://pypi.org/project/parsel_text/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
