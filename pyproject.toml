@@ -37,3 +37,11 @@ Repository = "https://github.com/carlosplanchon/parsel_text.git"
 
 [tool.setuptools]
 packages = ["parsel_text"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+xfail_strict = true
