@@ -28,9 +28,11 @@ keywords = ["dom", "parsel", "scraping", "xpath"]
 readme = "README.md"
 dependencies=[
     "ftfy",
-    "parsel",
-    "beautifulsoup4"
+    "parsel"
 ]
+
+[project.optional-dependencies]
+bs4 = ["beautifulsoup4"]
 
 [project.urls]
 Repository = "https://github.com/carlosplanchon/parsel_text.git"
@@ -39,7 +41,7 @@ Repository = "https://github.com/carlosplanchon/parsel_text.git"
 packages = ["parsel_text"]
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "beautifulsoup4"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

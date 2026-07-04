@@ -6,8 +6,6 @@ are the safety net for the refactor over real-world input. The desired fixes for
 the warts live in test_known_bugs.py as xfail(strict) tests.
 """
 
-import pytest
-
 from parsel import Selector
 
 from conftest import deep_nested_html, load_fixture, search_results_html
@@ -36,9 +34,9 @@ class TestNews:
         for marker in ("SCRIPT_INLINE_MARKER", "STYLE_INLINE_MARKER", "COMMENT_INLINE_MARKER"):
             assert marker not in out
 
-    def test_noscript_currently_included(self):
-        # CURRENT behaviour (pinned): <noscript> fallback text leaks into output.
-        assert "NOSCRIPT_MARKER" in self._out()
+    def test_noscript_excluded(self):
+        # After the refactor <noscript> fallback text is dropped like <script>.
+        assert "NOSCRIPT_MARKER" not in self._out()
 
 
 # --------------------------------------------------------------------------- #
@@ -71,12 +69,12 @@ class TestDataTable:
         out = self._out()
         assert "ACME" in out and "1.234.567" in out
 
-    def test_nested_table_duplicated(self):
-        # CURRENT behaviour (pinned bug): the inner table's cells appear twice --
-        # once via the outer <table> subtree, once as its own //table match.
+    def test_nested_table_not_duplicated(self):
+        # After the refactor //table keeps only the outermost match, so the inner
+        # table's cells appear exactly once.
         out = self._out()
-        assert out.count("Sub A") == 2
-        assert out.count("Sub B") == 2
+        assert out.count("Sub A") == 1
+        assert out.count("Sub B") == 1
 
 
 # --------------------------------------------------------------------------- #
@@ -123,11 +121,14 @@ class TestEncoding:
 # 6. Whitespace: <pre>/<code> significant whitespace is DESTROYED (data loss).
 # --------------------------------------------------------------------------- #
 class TestWhitespace:
-    def test_pre_code_collapsed_to_single_line(self):
-        # CURRENT behaviour (pinned bug): indentation/newlines inside <code> gone.
+    def test_pre_code_whitespace_preserved(self):
+        # After the refactor significant whitespace inside <pre>/<code> is kept.
         out = get_xpath_text(parsel_sel=sel(load_fixture("whitespace.html")), xpath="//code")
-        assert "def fibonacci(n): if n < 2: return n" in out
-        assert "\n    if" not in out  # indentation lost
+        assert "def fibonacci(n):\n    if n < 2:\n        return n" in out
+
+    def test_normal_paragraph_still_collapsed(self):
+        out = get_xpath_text(parsel_sel=sel(load_fixture("whitespace.html")), xpath="//p")
+        assert out == "Un párrafo normal con muchos espacios."
 
 
 # --------------------------------------------------------------------------- #
@@ -163,7 +164,8 @@ class TestDeepDom:
         out = get_xpath_text(parsel_sel=sel(deep_nested_html(500)), xpath="//body")
         assert "DEEP_LEAF" in out
 
-    def test_deep_raises_recursionerror(self):
-        # CURRENT behaviour (pinned bug): >= ~1000 nested nodes overflow the stack.
-        with pytest.raises(RecursionError):
-            get_xpath_text(parsel_sel=sel(deep_nested_html(1500)), xpath="//body")
+    def test_deep_extracts_without_crashing(self):
+        # After the refactor the extractor is iterative (lxml C-level), so a deep
+        # DOM no longer overflows the stack.
+        out = get_xpath_text(parsel_sel=sel(deep_nested_html(1500)), xpath="//body")
+        assert out == "DEEP_LEAF"

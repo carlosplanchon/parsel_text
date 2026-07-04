@@ -1,86 +1,82 @@
-"""Unit tests for internal helpers and the ParselGetSelectorInText class."""
+"""Unit tests for internal helpers of the native extractor."""
 
-from conftest import mojibake, sel, soup
+from parsel import Selector
 
-from parsel_text import ParselGetSelectorInText, remove_trailing_chars
+from parsel_text import (
+    _collapse_whitespace,
+    _iter_text_parts,
+    _outermost,
+    remove_trailing_chars,
+)
+
+
+def roots(html, xpath):
+    """lxml elements matched by *xpath* (for exercising element-level helpers)."""
+    return [s.root for s in Selector(text=html).xpath(xpath)]
 
 
 # --------------------------------------------------------------------------- #
-# remove_trailing_chars
-#
-# NB: despite its name/docstring ("trailing whitespace"), this helper collapses
-# *all* runs of whitespace (spaces, tabs, newlines, NBSP) into single spaces and
-# strips both ends. These tests pin that real behaviour.
+# _collapse_whitespace (and its backwards-compat alias remove_trailing_chars).
 # --------------------------------------------------------------------------- #
-class TestRemoveTrailingChars:
+class TestCollapseWhitespace:
     def test_collapses_internal_spaces(self):
-        assert remove_trailing_chars("a   b") == "a b"
+        assert _collapse_whitespace("a   b") == "a b"
 
     def test_strips_both_ends(self):
-        assert remove_trailing_chars("  a  ") == "a"
+        assert _collapse_whitespace("  a  ") == "a"
 
     def test_collapses_tabs_and_newlines(self):
-        assert remove_trailing_chars("a\tb\nc") == "a b c"
+        assert _collapse_whitespace("a\tb\nc") == "a b c"
 
     def test_collapses_nbsp(self):
-        assert remove_trailing_chars("a  b") == "a b"
+        assert _collapse_whitespace("a  b") == "a b"
 
-    def test_empty_string(self):
-        assert remove_trailing_chars("") == ""
+    def test_empty_and_whitespace_only(self):
+        assert _collapse_whitespace("") == ""
+        assert _collapse_whitespace("   \t\n  ") == ""
 
-    def test_whitespace_only(self):
-        assert remove_trailing_chars("   \t\n  ") == ""
-
-    def test_single_word_unchanged(self):
-        assert remove_trailing_chars("word") == "word"
-
-    def test_mixed_whitespace(self):
+    def test_remove_trailing_chars_is_the_same_shim(self):
         assert remove_trailing_chars("  a   b\tc\nd  ") == "a b c d"
 
 
 # --------------------------------------------------------------------------- #
-# ParselGetSelectorInText -- the stateful worker behind the public functions.
+# _iter_text_parts: descendant text of one element, cleaned, in order.
 # --------------------------------------------------------------------------- #
-class TestParselGetSelectorInText:
-    @staticmethod
-    def _fresh(fix_mojibake: bool = False) -> ParselGetSelectorInText:
-        obj = ParselGetSelectorInText(fix_mojibake=fix_mojibake)
-        obj.total_text = ""
-        return obj
+class TestIterTextParts:
+    def test_order_and_segmentation(self):
+        (div,) = roots("<div>A<span>B</span>C</div>", "//div")
+        assert _iter_text_parts(div) == ["A", "B", "C"]
 
-    def test_traverse_soup_order_and_newlines(self):
-        obj = self._fresh()
-        obj.traverse_soup(root=soup("<div>A<span>B</span>C</div>"))
-        assert obj.total_text == "A\nB\nC\n"
+    def test_excludes_script_keeps_tail(self):
+        (body,) = roots("<body>x<script>SECRET</script>y</body>", "//body")
+        assert _iter_text_parts(body) == ["x", "y"]
 
-    def test_traverse_soup_fix_mojibake_true(self):
-        obj = self._fresh(fix_mojibake=True)
-        obj.traverse_soup(root=soup("<div>" + mojibake("café") + "</div>"))
-        assert obj.total_text == "café\n"
+    def test_excludes_noscript(self):
+        (art,) = roots("<article>hi<noscript>NS</noscript>bye</article>", "//article")
+        assert _iter_text_parts(art) == ["hi", "bye"]
 
-    def test_traverse_soup_fix_mojibake_false(self):
-        obj = self._fresh(fix_mojibake=False)
-        obj.traverse_soup(root=soup("<div>" + mojibake("café") + "</div>"))
-        assert obj.total_text == mojibake("café") + "\n"
+    def test_preserves_pre_whitespace(self):
+        (pre,) = roots("<pre>a\n    b</pre>", "//pre")
+        assert _iter_text_parts(pre) == ["a\n    b"]
 
-    def test_get_sel_results_accumulates(self):
-        obj = self._fresh()
-        results = sel("<div><p>One</p><p>Two</p></div>").xpath("//p")
-        obj.get_sel_results(sel_results=results)
-        assert obj.total_text == "One\nTwo\n"
+    def test_whitespace_only_dropped(self):
+        (div,) = roots("<div>  <span> </span>  </div>", "//div")
+        assert _iter_text_parts(div) == []
 
-    def test_get_xpath_results_resets_between_calls(self):
-        obj = ParselGetSelectorInText(fix_mojibake=False)
-        first = obj.get_xpath_results(parsel_sel=sel("<p>One</p>"), xpath="//p")
-        second = obj.get_xpath_results(parsel_sel=sel("<p>Two</p>"), xpath="//p")
-        assert first == "One\n"
-        # Not "One\nTwo\n": get_xpath_results resets total_text on entry.
-        assert second == "Two\n"
 
-    def test_get_xpath_row_results(self):
-        obj = ParselGetSelectorInText(fix_mojibake=False)
-        rows = obj.get_xpath_row_results(
-            parsel_sel=sel("<ul><li>Uno   dos</li><li>Tres</li><li>  </li></ul>"),
-            xpath="//li",
-        )
-        assert rows == ["Uno dos\n", "Tres\n", ""]
+# --------------------------------------------------------------------------- #
+# _outermost: drop matches nested inside other matches (the de-dup rule).
+# --------------------------------------------------------------------------- #
+class TestOutermost:
+    def test_keeps_only_outer_of_nested(self):
+        divs = roots("<div id='o'><div id='i'>x</div></div>", "//div")
+        kept = _outermost(divs)
+        assert len(kept) == 1
+        assert kept[0].get("id") == "o"
+
+    def test_keeps_all_disjoint(self):
+        divs = roots("<body><div>a</div><div>b</div></body>", "//div")
+        assert len(_outermost(divs)) == 2
+
+    def test_empty(self):
+        assert _outermost([]) == []
