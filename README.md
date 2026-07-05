@@ -18,8 +18,6 @@ To install `parsel_text`, use pip:
 pip install parsel_text
 ```
 
-### DeepWiki Docs: [https://deepwiki.com/carlosplanchon/parsel_text](https://deepwiki.com/carlosplanchon/parsel_text)
-
 ## Usage
 
 ### Function: `get_xpath_text`
