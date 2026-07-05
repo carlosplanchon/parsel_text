@@ -51,21 +51,68 @@ def _ancestor_tags(text_node) -> set:
     return tags
 
 
-def _clean_text_node(text_node) -> str:
-    """One lxml text node -> its cleaned contribution, or "" if it is dropped."""
-    tags = _ancestor_tags(text_node)
-    if tags & _EXCLUDE_TAGS:
+def _clean(raw: str, excluded: bool, preformatted: bool) -> str:
+    """Cleaned contribution of a raw text node given its ancestor flags."""
+    if excluded:
         return ""
-    raw = str(text_node)
-    text = raw if (tags & _PREFORMATTED_TAGS) else _collapse_whitespace(raw)
+    text = raw if preformatted else _collapse_whitespace(raw)
     return text if text.strip() != "" else ""
 
 
+def _clean_text_node(text_node) -> str:
+    """One lxml text node -> its cleaned contribution, or "" if it is dropped."""
+    tags = _ancestor_tags(text_node)
+    return _clean(
+        str(text_node),
+        bool(tags & _EXCLUDE_TAGS),
+        bool(tags & _PREFORMATTED_TAGS),
+    )
+
+
 def _iter_text_parts(element) -> list[str]:
-    """All descendant text of an lxml element, in document order, cleaned."""
-    parts = []
+    """All descendant text of an lxml element, in document order, cleaned.
+
+    The exclusion/preformatted status contributed by *element*'s own ancestors
+    is the same for every text node in the subtree, so it is computed once;
+    each text node then only walks up to *element* rather than all the way to
+    the document root (which would repeat that shared ancestor chain per node).
+    """
+    above_excluded = above_preformatted = False
+    node = element.getparent()
+    while node is not None:
+        tag = node.tag
+        if isinstance(tag, str):
+            if tag in _EXCLUDE_TAGS:
+                above_excluded = True
+            if tag in _PREFORMATTED_TAGS:
+                above_preformatted = True
+        node = node.getparent()
+
+    parts: list[str] = []
     for text_node in element.xpath(".//text()"):
-        part = _clean_text_node(text_node)
+        parent = text_node.getparent()
+        if parent is None:
+            excluded = preformatted = False
+        else:
+            excluded, preformatted = above_excluded, above_preformatted
+            # A tail node belongs to its parent, so start one level up.
+            node = (
+                parent.getparent()
+                if getattr(text_node, "is_tail", False)
+                else parent
+            )
+            while node is not None:
+                tag = node.tag
+                if isinstance(tag, str):
+                    if tag in _EXCLUDE_TAGS:
+                        excluded = True
+                    if tag in _PREFORMATTED_TAGS:
+                        preformatted = True
+                if node is element:
+                    break
+                node = node.getparent()
+
+        part = _clean(str(text_node), excluded, preformatted)
         if part != "":
             parts.append(part)
     return parts
